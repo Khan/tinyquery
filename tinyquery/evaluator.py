@@ -279,7 +279,7 @@ class Evaluator(object):
             ctx_with_primary_key = context.empty_context_from_template(ctx)
             context.append_context_to_context(ctx, ctx_with_primary_key)
 
-            (table_name, _), _ = ctx_with_primary_key.columns.items()[0]
+            table_name = next(iter(ctx_with_primary_key.columns))
             row_nums = range(1, ctx_with_primary_key.num_rows + 1)
             row_nums_col = context.Column(
                 type=tq_types.INT, mode=tq_modes.NULLABLE, values=row_nums)
