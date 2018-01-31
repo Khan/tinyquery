@@ -71,7 +71,7 @@ def context_from_table(table, type_context):
     The order of the columns in the type context must match the order of the
     columns in the table.
     """
-    any_column = table.columns.values().next()
+    any_column = table.columns[next(iter(table.columns))]
     new_columns = collections.OrderedDict([
         (column_name, column)
         for (column_name, column) in zip(type_context.columns,
@@ -82,7 +82,7 @@ def context_from_table(table, type_context):
 
 def context_with_overlayed_type_context(context, type_context):
     """Given a context, use the given type context for all column names."""
-    any_column = context.columns.values().next()
+    any_column = context.columns[next(iter(context.columns))]
     new_columns = collections.OrderedDict([
         (column_name, column)
         for (column_name, column) in zip(type_context.columns,
