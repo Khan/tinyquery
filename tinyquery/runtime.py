@@ -587,7 +587,7 @@ class ConcatFunction(AggregateFunction):
 
     def _evaluate(self, num_rows, *columns):
         values = [None if None in strs else ''.join(strs)
-                  for strs in zip(*[x.values for x in columns])]
+                  for strs in zip(*[c.values for c in columns])]
         return context.Column(tq_types.STRING, tq_modes.NULLABLE,
                               values=values)
 
