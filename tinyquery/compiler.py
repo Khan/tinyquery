@@ -278,9 +278,11 @@ class Compiler(object):
             type_contexts)
         return typed_ast.Join(
             base=compiled_table_exprs[0],
-            tables=zip(compiled_table_exprs[1:],
-                       (join_part.join_type
-                        for join_part in table_expr.join_parts)),
+            # wrapping in list() for python 3 support (shouldn't be a large number
+            # of items so performance impact should be minimal)
+            tables=list(zip(compiled_table_exprs[1:],
+                            (join_part.join_type
+                             for join_part in table_expr.join_parts))),
             conditions=result_fields,
             type_ctx=result_type_ctx)
 

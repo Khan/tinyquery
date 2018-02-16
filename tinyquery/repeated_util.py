@@ -81,7 +81,8 @@ def flatten_column_values(repeated_column_indices, column_values):
             values.  The list for each column will not contain nested
             lists.
     """
-    rows = zip(*column_values)
+    # wrapping in list for python 3 support
+    rows = list(zip(*column_values))
     repetition_counts = [
         max(max(len(row[idx]) for idx in repeated_column_indices), 1)
         for row in rows
