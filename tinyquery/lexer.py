@@ -1,4 +1,5 @@
 """The lexer turns a query string into a stream of tokens."""
+from __future__ import absolute_import
 
 from ply import lex
 

@@ -1,12 +1,14 @@
 """Implementation of the TinyQuery service."""
+from __future__ import absolute_import
+
 import collections
 import json
 
-import compiler
-import context
-import evaluator
-import tq_modes
-import tq_types
+from tinyquery import compiler
+from tinyquery import context
+from tinyquery import evaluator
+from tinyquery import tq_modes
+from tinyquery import tq_types
 
 
 class TinyQueryError(Exception):

@@ -1,15 +1,17 @@
 # TODO(colin): fix these lint errors (http://pep8.readthedocs.io/en/release-1.7.x/intro.html#error-codes)
 # pep8-disable:E122,E127,E128
+from __future__ import absolute_import
+
 import collections
 import contextlib
 import datetime
 import mock
 import unittest
 
-import context
-import tinyquery
-import tq_modes
-import tq_types
+from tinyquery import context
+from tinyquery import tinyquery
+from tinyquery import tq_modes
+from tinyquery import tq_types
 
 
 # TODO(Samantha): Not all modes are nullable.
@@ -659,6 +661,16 @@ class EvaluatorTest(unittest.TestCase):
             self.make_context([
                 ('str', tq_types.STRING, [])]))
 
+    def test_order_aggregate(self):
+        self.skipTest("Ordering by an aggregate field is not yet supported")
+        # TODO: this is not yet supported
+        self.assert_query_result(
+            'SELECT val1, MAX(val2) as m FROM test_table GROUP BY val1 ORDER BY m',
+            self.make_context([
+                ('val1', tq_types.INT, [1, 2, 8, 4]),
+                ('m', tq_types.INT, [2, 4, 6, 8]),
+            ]))
+
     def test_select_multiple_tables(self):
         self.assert_query_result(
             'SELECT val1, val2, val3 FROM test_table, test_table_2',
@@ -802,6 +814,53 @@ class EvaluatorTest(unittest.TestCase):
                 collections.OrderedDict([((None, 'i'), expected_column)]),
                 None))
 
+    def test_join_ordering(self):
+        # Using aliases
+        self.assert_query_result(
+            'SELECT t1.val1 as v1, t1.val2 as v2, t3.foo as foo, t3.bar as bar FROM test_table t1'
+            '    JOIN test_table_3 t3 ON t1.val1 = t3.foo ORDER BY v2, bar',
+            self.make_context([
+                ('v1', tq_types.INT, [1, 1, 1, 1, 2, 4]),
+                ('v2', tq_types.INT, [1, 1, 2, 2, 6, 8]),
+                ('foo', tq_types.INT, [1, 1, 1, 1, 2, 4]),
+                ('bar', tq_types.INT, [1, 2, 1, 2, 7, 3]),
+            ]))
+        # Not using aliases
+        self.assert_query_result(
+            'SELECT t1.val1, t1.val2, t3.foo, t3.bar FROM test_table t1'
+            '    JOIN test_table_3 t3 ON t1.val1 = t3.foo ORDER BY val2, bar',
+            self.make_context([
+                ('t1.val1', tq_types.INT, [1, 1, 1, 1, 2, 4]),
+                ('t1.val2', tq_types.INT, [1, 1, 2, 2, 6, 8]),
+                ('t3.foo', tq_types.INT, [1, 1, 1, 1, 2, 4]),
+                ('t3.bar', tq_types.INT, [1, 2, 1, 2, 7, 3]),
+            ]))
+
+    def test_join_ordering_duplicate_column_names(self):
+        self.assert_query_result(
+            'SELECT t1.val1 as v1, t2.val2 as v2 FROM test_table t1'
+            '    JOIN test_table_2 t2 ON t1.val1 = t2.val3'
+            '    ORDER BY v2',
+            self.make_context([
+                ('v1', tq_types.INT, [8]),
+                ('v2', tq_types.INT, [7]),
+            ]))
+
+    def test_order_without_select(self):
+        self.assert_query_result(
+            'SELECT val1 FROM test_table ORDER BY val2',
+            self.make_context([
+                ('val1', tq_types.INT, [1, 1, 8, 2, 4])
+            ]))
+        self.assert_query_result(
+            'SELECT t1.val1, t1.val2, t3.foo FROM test_table t1'
+            '    JOIN test_table_3 t3 ON t1.val1 = t3.foo ORDER BY val2, bar',
+            self.make_context([
+                ('t1.val1', tq_types.INT, [1, 1, 1, 1, 2, 4]),
+                ('t1.val2', tq_types.INT, [1, 1, 2, 2, 6, 8]),
+                ('t3.foo', tq_types.INT, [1, 1, 1, 1, 2, 4]),
+            ]))
+
     def test_null_test(self):
         self.assert_query_result(
             'SELECT foo IS NULL, foo IS NOT NULL FROM null_table',
@@ -944,6 +1003,32 @@ class EvaluatorTest(unittest.TestCase):
         self.assert_query_result(
             'SELECT COUNT(DISTINCT val1) FROM some_nulls_table',
             self.make_context([('f0_', tq_types.INT, [2])]))
+
+    def test_group_concat_unquoted(self):
+        self.assert_query_result(
+            'SELECT GROUP_CONCAT_UNQUOTED(str) FROM string_table',
+            self.make_context([
+                ('f0_', tq_types.STRING, ['hello,world'])
+            ]))
+        self.assert_query_result(
+            'SELECT GROUP_CONCAT_UNQUOTED(children.name) FROM record_table_2',
+            self.make_context([
+                ('f0_', tq_types.STRING, ['Jane,John,Earl,Sam,Kit'])
+            ]))
+
+    def test_null_group_concat_unquoted(self):
+        self.assert_query_result(
+            'SELECT GROUP_CONCAT_UNQUOTED(str) FROM string_table_with_null',
+            self.make_context([
+                ('f0_', tq_types.STRING, ['hello,world'])
+            ]))
+
+    def test_group_concat_unquoted_separator(self):
+        self.assert_query_result(
+            'SELECT GROUP_CONCAT_UNQUOTED(str, \' || \') FROM string_table',
+            self.make_context([
+                ('f0_', tq_types.STRING, ['hello || world'])
+            ]))
 
     def test_count_star(self):
         self.assert_query_result(

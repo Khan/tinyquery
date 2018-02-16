@@ -4,19 +4,18 @@ This step has a number of responsibilities:
 -Validate that the expression is well-typed.
 -Resolve all select fields to their aliases and types.
 """
+from __future__ import absolute_import
+
 import collections
 import itertools
 
-import parser
-import runtime
-import tq_ast
-import typed_ast
-import type_context
-import tq_types
-
-
-class CompileError(Exception):
-    pass
+from tinyquery import exceptions
+from tinyquery import parser
+from tinyquery import runtime
+from tinyquery import tq_ast
+from tinyquery import typed_ast
+from tinyquery import type_context
+from tinyquery import tq_types
 
 
 def compile_text(text, tables_by_name):
@@ -213,7 +212,7 @@ class Compiler(object):
             return method(table_expr)
 
     def compile_table_expr_TableId(self, table_expr):
-        import tinyquery  # TODO(colin): fix circular import
+        from tinyquery import tinyquery  # TODO(colin): fix circular import
         table = self.tables_by_name[table_expr.name]
         if isinstance(table, tinyquery.Table):
             return self.compile_table_ref(table_expr, table)
@@ -294,7 +293,7 @@ class Compiler(object):
         elif isinstance(table_expr, tq_ast.TableId):
             alias = table_expr.name
         else:
-            raise CompileError('Table expression must have an alias name.')
+            raise exceptions.CompileError('Table expression must have an alias name.')
         result_ctx = compiled_table.type_ctx.context_with_full_alias(alias)
         compiled_table = compiled_table.with_type_ctx(result_ctx)
         return compiled_table, alias
@@ -366,7 +365,7 @@ class Compiler(object):
                                                      left_column_id)]
                     # Fall through to the error case if the aliases are the
                     # same for both sides.
-            raise CompileError('JOIN conditions must consist of an AND of = '
+            raise exceptions.CompileError('JOIN conditions must consist of an AND of = '
                                'comparisons between two field on distinct '
                                'tables. Got expression %s' % expr)
         return [compile_join_field(expr, join_type)
@@ -434,7 +433,7 @@ class Compiler(object):
     def compile_select_field(self, expr, alias, within_clause, type_ctx):
         if within_clause is not None and within_clause != 'RECORD' and (
                     expr.args[0].name.split('.')[0] != within_clause):
-            raise CompileError('WITHIN clause syntax error')
+            raise exceptions.CompileError('WITHIN clause syntax error')
         else:
             compiled_expr = self.compile_expr(expr, type_ctx)
             return typed_ast.SelectField(compiled_expr, alias, within_clause)
@@ -485,7 +484,7 @@ class Compiler(object):
         try:
             result_type = func.check_types(compiled_val.type)
         except TypeError:
-            raise CompileError('Invalid type for operator {}: {}'.format(
+            raise exceptions.CompileError('Invalid type for operator {}: {}'.format(
                 expr.operator, [compiled_val.type]))
         return typed_ast.FunctionCall(func, [compiled_val], result_type)
 
@@ -501,7 +500,7 @@ class Compiler(object):
             result_type = func.check_types(compiled_left.type,
                                            compiled_right.type)
         except TypeError:
-            raise CompileError('Invalid types for operator {}: {}'.format(
+            raise exceptions.CompileError('Invalid types for operator {}: {}'.format(
                 expr.operator, [arg.type for arg in [compiled_left,
                                                      compiled_right]]))
 
@@ -516,7 +515,7 @@ class Compiler(object):
         # that the evaluator knows to change the context.
         if self.is_innermost_aggregate(expr):
             if type_ctx.aggregate_context is None:
-                raise CompileError('Unexpected aggregate function.')
+                raise exceptions.CompileError('Unexpected aggregate function.')
             sub_expr_ctx = type_ctx.aggregate_context
             ast_type = typed_ast.AggregateFunctionCall
         else:
@@ -530,7 +529,7 @@ class Compiler(object):
             result_type = func.check_types(
                 *(arg.type for arg in compiled_args))
         except TypeError:
-            raise CompileError('Invalid types for function {}: {}'.format(
+            raise exceptions.CompileError('Invalid types for function {}: {}'.format(
                 expr.name, [arg.type for arg in compiled_args]))
         return ast_type(func, compiled_args, result_type)
 
@@ -557,7 +556,7 @@ class Compiler(object):
         for alias in proposed_aliases:
             if alias is not None:
                 if alias in used_aliases:
-                    raise CompileError(
+                    raise exceptions.CompileError(
                         'Ambiguous column name {}.'.format(alias))
                 used_aliases.add(alias)
 

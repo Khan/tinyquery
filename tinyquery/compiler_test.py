@@ -1,18 +1,21 @@
 # TODO(colin): fix these lint errors (http://pep8.readthedocs.io/en/release-1.7.x/intro.html#error-codes)
 # pep8-disable:E122
+from __future__ import absolute_import
+
 import collections
 import datetime
 import unittest
 
-import compiler
-import context
-import runtime
-import tinyquery
-import tq_ast
-import tq_modes
-import tq_types
-import type_context
-import typed_ast
+from tinyquery import exceptions
+from tinyquery import compiler
+from tinyquery import context
+from tinyquery import runtime
+from tinyquery import tinyquery
+from tinyquery import tq_ast
+from tinyquery import tq_modes
+from tinyquery import tq_types
+from tinyquery import type_context
+from tinyquery import typed_ast
 
 
 class CompilerTest(unittest.TestCase):
@@ -124,7 +127,7 @@ class CompilerTest(unittest.TestCase):
         self.assertEqual(expected_ast, ast)
 
     def assert_compile_error(self, text):
-        self.assertRaises(compiler.CompileError, compiler.compile_text,
+        self.assertRaises(exceptions.CompileError, compiler.compile_text,
                           text, self.tables_by_name)
 
     def make_type_context(self, table_column_type_triples,
@@ -178,7 +181,7 @@ class CompilerTest(unittest.TestCase):
         )
 
     def test_mistyped_unary_operator(self):
-        with self.assertRaises(compiler.CompileError) as context:
+        with self.assertRaises(exceptions.CompileError) as context:
             compiler.compile_text('SELECT -strings FROM rainbow_table',
                                   self.tables_by_name)
         self.assertTrue('Invalid type for operator' in str(context.exception))
@@ -187,12 +190,12 @@ class CompilerTest(unittest.TestCase):
         try:
             compiler.compile_text('SELECT times + ints + floats + bools FROM '
                                   'rainbow_table', self.tables_by_name)
-        except compiler.CompileError:
+        except exceptions.CompileError:
             self.fail('Compiler exception on arithmetic across all numeric '
                       'types.')
 
     def test_mistyped_binary_operator(self):
-        with self.assertRaises(compiler.CompileError) as context:
+        with self.assertRaises(exceptions.CompileError) as context:
             compiler.compile_text('SELECT ints CONTAINS strings FROM '
                                   'rainbow_table',
                                   self.tables_by_name)
@@ -241,7 +244,7 @@ class CompilerTest(unittest.TestCase):
         )
 
     def test_mistyped_function_call(self):
-        with self.assertRaises(compiler.CompileError) as context:
+        with self.assertRaises(exceptions.CompileError) as context:
             compiler.compile_text('SELECT SUM(strings) FROM rainbow_table',
                                   self.tables_by_name)
         self.assertTrue('Invalid types for function' in str(context.exception))
@@ -1001,7 +1004,7 @@ class CompilerTest(unittest.TestCase):
                     self.make_type_context([]))))
 
     def test_within_clause_error(self):
-        with self.assertRaises(compiler.CompileError) as context:
+        with self.assertRaises(exceptions.CompileError) as context:
             compiler.compile_text(
                 'SELECT r1.s, COUNT(r1.s) WITHIN r2 AS '
                 'num_s_in_r1 FROM record_table',

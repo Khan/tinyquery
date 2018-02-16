@@ -2,13 +2,14 @@
 
 It is the basic container for intermediate data when evaluating a query.
 """
+from __future__ import absolute_import
 
 import collections
 import itertools
 import logging
 
-import repeated_util
-import tq_modes
+from tinyquery import repeated_util
+from tinyquery import tq_modes
 
 
 class Context(object):

@@ -1,8 +1,9 @@
 """A set of AST classes with types and aliases filled in."""
+from __future__ import absolute_import
 
 import collections
-import type_context
-import tq_modes
+
+from tinyquery import tq_modes
 
 
 class Select(collections.namedtuple(
@@ -74,6 +75,7 @@ class TableExpression(object):
 class NoTable(collections.namedtuple('NoTable', []), TableExpression):
     @property
     def type_ctx(self):
+        from tinyquery import type_context  # To avoid circular import
         return type_context.TypeContext.from_full_columns(
             collections.OrderedDict())
 

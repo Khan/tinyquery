@@ -1,8 +1,10 @@
+from __future__ import absolute_import
+
 import unittest
 
-import api_client
-import tq_types
-import tinyquery
+from tinyquery import api_client
+from tinyquery import tq_types
+from tinyquery import tinyquery
 
 
 class ApiClientTest(unittest.TestCase):

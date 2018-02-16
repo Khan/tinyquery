@@ -1,12 +1,14 @@
 # TODO(colin): fix these lint errors (http://pep8.readthedocs.io/en/release-1.7.x/intro.html#error-codes)
 # pep8-disable:E115,E128
+from __future__ import absolute_import
+
 import collections
 
-import context
-import tq_ast
-import tq_modes
-import typed_ast
-import tq_types
+from tinyquery import context
+from tinyquery import tq_ast
+from tinyquery import tq_modes
+from tinyquery import typed_ast
+from tinyquery import tq_types
 
 
 class Evaluator(object):
@@ -50,7 +52,8 @@ class Evaluator(object):
 
         if select_ast.orderings is not None:
             result = self.evaluate_orderings(select_context, result,
-                                             select_ast.orderings)
+                                             select_ast.orderings,
+                                             select_ast.select_fields)
 
         if select_ast.limit is not None:
             context.truncate_context(result, select_ast.limit)
@@ -131,7 +134,7 @@ class Evaluator(object):
         return result_context
 
     def evaluate_orderings(self, overall_context, select_context,
-                           ordering_col):
+                           ordering_col, select_fields):
         """
         Evaluate a context and order it by a list of given columns.
 
@@ -145,10 +148,18 @@ class Evaluator(object):
                 is_ascending which is a boolean for the order in which the
                 column has to be arranged (True for ascending and False for
                 descending).
+            select_fields: A list of select fields that can be used to map
+                aliases back to the overall context
 
         Returns:
             A context with the results.
         """
+        # A dict of aliases for select fields since an order by field might be an alias
+        select_aliases = collections.OrderedDict(
+            (select_field.alias, (select_field.expr.table, select_field.expr.column))
+            for select_field in select_fields
+        )
+
         assert select_context.aggregate_context is None
         all_values = []
         sort_by_indexes = collections.OrderedDict()
@@ -157,9 +168,23 @@ class Evaluator(object):
             all_values.append(column.values)
 
         for order_by_column in ordering_col:
-            for count, ((_, column_name), column) in enumerate(
+            order_column_name = order_by_column.column_id.name
+
+            for count, (column_identifier_pair, column) in enumerate(
                     overall_context.columns.iteritems()):
-                if order_by_column.column_id.name == column_name:
+                if (
+                    # order by column is of the form `table_name.col`
+                    '%s.%s' % column_identifier_pair == order_column_name
+                    # order by column is an alias
+                    or select_aliases.get(order_column_name) == column_identifier_pair
+                    or (
+                        # order by column is just the field name
+                        # but not if that field name is also an alias
+                        # to avoid mixing up duplicate field names across joins
+                        order_column_name not in select_aliases
+                        and order_column_name == column_identifier_pair[1]
+                    )
+                ):
                     sort_by_indexes[count] = order_by_column.is_ascending
                     break
         reversed_sort_by_indexes = collections.OrderedDict(
@@ -181,9 +206,15 @@ class Evaluator(object):
             ordered_values = all_values
 
         for key in select_context.columns:
-            for count, (_, overall_key) in enumerate(overall_context.columns):
+            for count, overall_column_identifier_pair in enumerate(overall_context.columns):
                 overall_context_loop_break = False
-                if overall_key == key[1]:
+                if (
+                    key == overall_column_identifier_pair
+                    or not key[0] and (
+                        key[1] == '%s.%s' % overall_column_identifier_pair
+                        or select_aliases.get(key[1]) == overall_column_identifier_pair
+                    )
+                ):
                     select_context.columns[key] = context.Column(
                         type=select_context.columns[key].type,
                         mode=select_context.columns[key].mode,

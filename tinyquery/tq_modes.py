@@ -1,5 +1,6 @@
 """ Defines the valid modes. Currently we just use strings to identify them.
 """
+from __future__ import absolute_import
 
 NULLABLE = "NULLABLE"
 REQUIRED = "REQUIRED"

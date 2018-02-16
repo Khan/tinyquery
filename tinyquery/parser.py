@@ -1,10 +1,12 @@
 """The parser turns a stream of tokens into an AST."""
+from __future__ import absolute_import
+
 import os
 
 from ply import yacc
 
-import tq_ast
-import lexer
+from tinyquery import tq_ast
+from tinyquery import lexer
 
 
 tokens = lexer.tokens
@@ -484,6 +486,6 @@ def parse_text(text):
     if should_rebuild_parser:
         parser = yacc.yacc()
     else:
-        import parsetab
+        from tinyquery import parsetab
         parser = yacc.yacc(debug=0, write_tables=0, tabmodule=parsetab)
     return parser.parse(text, lexer=lexer.get_lexer())

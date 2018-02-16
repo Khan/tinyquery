@@ -1,6 +1,8 @@
+from __future__ import absolute_import
+
 import unittest
 
-import lexer
+from tinyquery import lexer
 
 
 plus = ('PLUS', '+')

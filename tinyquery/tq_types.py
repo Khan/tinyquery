@@ -1,5 +1,7 @@
 """Defines the valid types. Currently we just uses strings to identify them.
 """
+from __future__ import absolute_import
+
 import sys
 
 import arrow

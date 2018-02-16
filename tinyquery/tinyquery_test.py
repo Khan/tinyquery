@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 import json
 import unittest
 
-import tinyquery
+from tinyquery import tinyquery
 
 
 class TinyQueryTest(unittest.TestCase):

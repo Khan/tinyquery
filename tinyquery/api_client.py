@@ -4,6 +4,8 @@
 
 This can be used in place of the value returned by apiclient.discovery.build().
 """
+from __future__ import absolute_import
+
 import functools
 import json
 
@@ -36,7 +38,9 @@ class FakeHttpRequest(object):
         self.args = args
         self.kwargs = kwargs
 
-    def execute(self):
+    def execute(self, http=None, num_retries=0):
+        # It probably doesn't make sense to support http or num_retries in
+        # a mock, but we need to accept them as kwargs to avoid errors
         return self.func(*self.args, **self.kwargs)
 
 

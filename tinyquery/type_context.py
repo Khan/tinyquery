@@ -1,9 +1,11 @@
+from __future__ import absolute_import
+
 import collections
 import re
 
-import compiler
-import tq_types
-import typed_ast
+from tinyquery import exceptions
+from tinyquery import tq_types
+from tinyquery import typed_ast
 
 
 # TODO(Samantha): Should checking modes go here?
@@ -93,7 +95,7 @@ class TypeContext(collections.namedtuple(
                 if full_column in result_columns:
                     if result_columns[full_column] == col_type:
                         continue
-                    raise compiler.CompileError(
+                    raise exceptions.CompileError(
                         'Incompatible types when performing union on field '
                         '{}: {} vs. {}'.format(full_column,
                                                result_columns[full_column],
@@ -134,12 +136,12 @@ class TypeContext(collections.namedtuple(
         if len(possible_results) == 1:
             return possible_results[0]
         elif len(possible_results) > 1:
-            raise compiler.CompileError('Ambiguous field: {}'.format(name))
+            raise exceptions.CompileError('Ambiguous field: {}'.format(name))
         else:
             if self.implicit_column_context is not None:
                 return self.implicit_column_context.column_ref_for_name(name)
             else:
-                raise compiler.CompileError('Field not found: {}'.format(name))
+                raise exceptions.CompileError('Field not found: {}'.format(name))
 
     def context_with_subquery_alias(self, subquery_alias):
         """Handle the case where a subquery has an alias.

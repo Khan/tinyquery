@@ -3,6 +3,7 @@
 This AST format is desinged to be easy to parse into. See typed_ast for the AST
 format that is used during the evaluation step.
 """
+from __future__ import absolute_import
 
 import collections
 

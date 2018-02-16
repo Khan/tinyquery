@@ -5,8 +5,9 @@ columns when using them in conjunction with other repeated or scalar fields.
 These functions allow us to flatten into non-repeated columns to apply various
 operations and then unflatten back into repeated columns afterwards.
 """
+from __future__ import absolute_import
 
-import tq_modes
+from tinyquery import tq_modes
 
 
 def rebuild_column_values(repetitions, values, result):

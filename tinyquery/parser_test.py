@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 import unittest
 
-import tq_ast
-import parser
+from tinyquery import tq_ast
+from tinyquery import parser
 
 
 def literal(value):
