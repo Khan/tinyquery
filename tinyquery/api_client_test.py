@@ -146,7 +146,7 @@ class ApiClientTest(unittest.TestCase):
             }
         ).execute()
 
-        for _ in xrange(5):
+        for _ in range(5):
             self.tq_service.jobs().insert(
                 projectId='test_project',
                 body={

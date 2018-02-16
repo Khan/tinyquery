@@ -8,6 +8,8 @@ import collections
 import itertools
 import logging
 
+import six
+
 from tinyquery import repeated_util
 from tinyquery import tq_modes
 
@@ -286,8 +288,8 @@ def cross_join_contexts(context1, context2):
         [(col_name, Column(type=col.type, mode=col.mode, values=[]))
          for col_name, col in context2.columns.items()])
 
-    for index1 in xrange(context1.num_rows):
-        for index2 in xrange(context2.num_rows):
+    for index1 in six.moves.xrange(context1.num_rows):
+        for index2 in six.moves.xrange(context2.num_rows):
             for col_name, column in context1.columns.items():
                 result_columns[col_name].values.append(column.values[index1])
             for col_name, column in context2.columns.items():
