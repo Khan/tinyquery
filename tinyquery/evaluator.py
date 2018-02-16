@@ -122,7 +122,7 @@ class Evaluator(object):
 
         result_context = self.empty_context_from_select_fields(select_fields)
         result_col_names = [field.alias for field in select_fields]
-        for context_key, group_context in group_contexts.iteritems():
+        for context_key, group_context in group_contexts.items():
             group_eval_context = context.Context(
                 1, context_key.columns, group_context)
             group_aggregate_result_context = self.evaluate_select_fields(
@@ -164,14 +164,14 @@ class Evaluator(object):
         all_values = []
         sort_by_indexes = collections.OrderedDict()
 
-        for ((_, column_name), column) in overall_context.columns.iteritems():
+        for ((_, column_name), column) in overall_context.columns.items():
             all_values.append(column.values)
 
         for order_by_column in ordering_col:
             order_column_name = order_by_column.column_id.name
 
             for count, (column_identifier_pair, column) in enumerate(
-                    overall_context.columns.iteritems()):
+                    overall_context.columns.items()):
                 if (
                     # order by column is of the form `table_name.col`
                     '%s.%s' % column_identifier_pair == order_column_name
@@ -191,7 +191,7 @@ class Evaluator(object):
             reversed(list(sort_by_indexes.items())))
 
         t_all_values = [list(z) for z in zip(*all_values)]
-        for index, is_ascending in reversed_sort_by_indexes.iteritems():
+        for index, is_ascending in reversed_sort_by_indexes.items():
             t_all_values.sort(key=lambda x: (x[index]),
                               reverse=not is_ascending)
         ordered_values = [list(z) for z in zip(*t_all_values)]
@@ -310,7 +310,7 @@ class Evaluator(object):
             ctx_with_primary_key = context.empty_context_from_template(ctx)
             context.append_context_to_context(ctx, ctx_with_primary_key)
 
-            (table_name, _), _ = ctx_with_primary_key.columns.items()[0]
+            table_name = next(iter(ctx_with_primary_key.columns))
             row_nums = range(1, ctx_with_primary_key.num_rows + 1)
             row_nums_col = context.Column(
                 type=tq_types.INT, mode=tq_modes.NULLABLE, values=row_nums)

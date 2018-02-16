@@ -224,7 +224,7 @@ class Compiler(object):
     def compile_table_ref(self, table_expr, table):
         alias = table_expr.alias or table_expr.name
         columns = collections.OrderedDict([
-            (name, column.type) for name, column in table.columns.iteritems()
+            (name, column.type) for name, column in table.columns.items()
         ])
         type_ctx = type_context.TypeContext.from_table_and_columns(
             alias, columns, None)

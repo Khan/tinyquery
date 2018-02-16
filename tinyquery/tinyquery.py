@@ -37,7 +37,7 @@ class TinyQuery(object):
                     'Expected {} tokens on line {}, but got {}'.format(
                         len(result_table.columns), line, len(tokens)))
                 for token, column in zip(tokens,
-                                         result_table.columns.itervalues()):
+                                         result_table.columns.values()):
                     # Run a casting function over the value we are given.
                     # CSV doesn't have a null value, so the string 'null' is
                     # used as the null value.
@@ -145,7 +145,7 @@ class TinyQuery(object):
             return output
 
         def process_row(row):
-            for (key, value) in row.iteritems():
+            for (key, value) in row.items():
                 mode = result_table.columns[key].mode
                 token = run_cast_function(key, mode, value)
                 if not tq_modes.check_mode(token, mode):
@@ -228,7 +228,7 @@ class TinyQuery(object):
         table = self.tables_by_name[dataset + '.' + table_name]
         schema_fields = []
         # TODO(colin): record fields should appear grouped.
-        for col_name, column in table.columns.iteritems():
+        for col_name, column in table.columns.items():
             schema_fields.append({
                 'name': col_name,
                 'type': column.type,
@@ -295,7 +295,7 @@ class TinyQuery(object):
     def table_from_context(table_name, ctx):
         return Table(table_name, ctx.num_rows, collections.OrderedDict(
             (col_name, column)
-            for (_, col_name), column in ctx.columns.iteritems()
+            for (_, col_name), column in ctx.columns.items()
         ))
 
     def run_copy_job(self, project_id, src_dataset, src_table_name,
@@ -339,7 +339,7 @@ class TinyQuery(object):
             # TODO(Samantha): This shouldn't just be nullable.
             (col_name, context.Column(type=col.type, mode=tq_modes.NULLABLE,
                                       values=[]))
-            for col_name, col in template_table.columns.iteritems()
+            for col_name, col in template_table.columns.items()
         )
         table = Table(table_name, 0, columns)
         self.load_table_or_view(table)
@@ -347,13 +347,13 @@ class TinyQuery(object):
     @staticmethod
     def clear_table(table):
         table.num_rows = 0
-        for column in table.columns.itervalues():
+        for column in table.columns.values():
             column.values[:] = []
 
     @staticmethod
     def append_to_table(src_table, dest_table):
         dest_table.num_rows += src_table.num_rows
-        for col_name, column in dest_table.columns.iteritems():
+        for col_name, column in dest_table.columns.items():
             if col_name in src_table.columns:
                 column.values.extend(src_table.columns[col_name].values)
             else:
@@ -380,7 +380,7 @@ class Table(object):
     """
     def __init__(self, name, num_rows, columns):
         assert isinstance(columns, collections.OrderedDict)
-        for col_name, column in columns.iteritems():
+        for col_name, column in columns.items():
             assert isinstance(col_name, tq_types.STRING_TYPE)
             assert len(column.values) == num_rows, (
                 'Column %s had %s rows, expected %s.' % (

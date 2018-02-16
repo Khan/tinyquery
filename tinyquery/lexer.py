@@ -64,7 +64,7 @@ tokens = [
     'FLOAT',
     'ID',
     'STRING'
-] + reserved_words.values()
+] + list(reserved_words.values())  # wrapping with list() to support python 3
 
 
 t_PLUS = r'\+'

@@ -229,7 +229,7 @@ def schema_from_table(table):
     """Given a tinyquery.Table, build an API-compatible schema."""
     return {'fields': [
         {'name': name, 'type': col.type}
-        for name, col in table.columns.iteritems()
+        for name, col in table.columns.items()
     ]}
 
 
@@ -238,7 +238,7 @@ def rows_from_table(table):
     result_rows = []
     for i in xrange(table.num_rows):
         field_values = [{'v': str(col.values[i])}
-                        for col in table.columns.itervalues()]
+                        for col in table.columns.values()]
         result_rows.append({
             'f': field_values
         })

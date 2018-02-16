@@ -26,7 +26,7 @@ class Context(object):
     """
     def __init__(self, num_rows, columns, aggregate_context):
         assert isinstance(columns, collections.OrderedDict)
-        for (table_name, col_name), column in columns.iteritems():
+        for (table_name, col_name), column in columns.items():
             assert len(column.values) == num_rows, (
                 'Column %s had %s rows, expected %s.' % (
                     (table_name, col_name), len(column.values), num_rows))
@@ -70,22 +70,22 @@ def context_from_table(table, type_context):
     The order of the columns in the type context must match the order of the
     columns in the table.
     """
-    any_column = table.columns.itervalues().next()
+    any_column = table.columns[next(iter(table.columns))]
     new_columns = collections.OrderedDict([
         (column_name, column)
         for (column_name, column) in zip(type_context.columns,
-                                         table.columns.itervalues())
+                                         table.columns.values())
     ])
     return Context(len(any_column.values), new_columns, None)
 
 
 def context_with_overlayed_type_context(context, type_context):
     """Given a context, use the given type context for all column names."""
-    any_column = context.columns.itervalues().next()
+    any_column = context.columns[next(iter(context.columns))]
     new_columns = collections.OrderedDict([
         (column_name, column)
         for (column_name, column) in zip(type_context.columns,
-                                         context.columns.itervalues())
+                                         context.columns.values())
     ])
     return Context(len(any_column.values), new_columns, None)
 
@@ -95,7 +95,7 @@ def empty_context_from_type_context(type_context):
     result_columns = collections.OrderedDict(
         # TODO(Samantha): Fix this. Mode is not always nullable
         (col_name, Column(type=col_type, mode=tq_modes.NULLABLE, values=[]))
-        for col_name, col_type in type_context.columns.iteritems()
+        for col_name, col_type in type_context.columns.items()
     )
     return Context(0, result_columns, None)
 
@@ -119,7 +119,7 @@ def mask_context(context, mask):
             [r for r in (any(row) for row in mask.values) if r]
         )
         new_columns = collections.OrderedDict()
-        for col_name, col in context.columns.iteritems():
+        for col_name, col in context.columns.items():
             if col.mode == tq_modes.REPEATED:
                 allowable = True
                 new_values = []
@@ -182,7 +182,7 @@ def mask_context(context, mask):
                 values=new_values)
     else:
         orig_column_values = [
-            col.values for col in context.columns.itervalues()]
+            col.values for col in context.columns.values()]
         mask_values = mask.values
         num_rows = len([v for v in mask.values if v])
         new_values = [
@@ -190,7 +190,7 @@ def mask_context(context, mask):
                 type=col.type,
                 mode=col.mode,
                 values=list(itertools.compress(values, mask_values)))
-            for col, values in zip(context.columns.itervalues(),
+            for col, values in zip(context.columns.values(),
                                    orig_column_values)]
         new_columns = collections.OrderedDict([
             (name, col) for name, col in zip(context.columns,
@@ -208,7 +208,7 @@ def empty_context_from_template(context):
         num_rows=0,
         columns=collections.OrderedDict(
             (name, empty_column_from_template(column))
-            for name, column in context.columns.iteritems()
+            for name, column in context.columns.items()
         ),
         aggregate_context=None)
 
@@ -224,7 +224,7 @@ def append_row_to_context(src_context, index, dest_context):
     The schemas of the two contexts must match.
     """
     dest_context.num_rows += 1
-    for name, column in dest_context.columns.iteritems():
+    for name, column in dest_context.columns.items():
         column.values.append(src_context.columns[name].values[index])
 
 
@@ -241,9 +241,9 @@ def append_partial_context_to_context(src_context, dest_context):
     # Ignore fully-qualified names for this operation.
     short_named_src_column_values = {
         col_name: column.values
-        for (_, col_name), column in src_context.columns.iteritems()}
+        for (_, col_name), column in src_context.columns.items()}
 
-    for (_, col_name), dest_column in dest_context.columns.iteritems():
+    for (_, col_name), dest_column in dest_context.columns.items():
         src_column_values = short_named_src_column_values.get(col_name)
         if src_column_values is None:
             dest_column.values.extend([None] * src_context.num_rows)
@@ -258,7 +258,7 @@ def append_context_to_context(src_context, dest_context):
     account.
     """
     dest_context.num_rows += src_context.num_rows
-    for dest_column_key, dest_column in dest_context.columns.iteritems():
+    for dest_column_key, dest_column in dest_context.columns.items():
         src_column = src_context.columns.get(dest_column_key)
         if src_column is None:
             dest_column.values.extend([None] * src_context.num_rows)
@@ -272,7 +272,7 @@ def row_context_from_context(src_context, index):
     columns = collections.OrderedDict(
         (col_name, Column(type=col.type, mode=col.mode,
          values=[col.values[index]]))
-        for col_name, col in src_context.columns.iteritems()
+        for col_name, col in src_context.columns.items()
     )
     return Context(1, columns, None)
 
@@ -282,15 +282,15 @@ def cross_join_contexts(context1, context2):
     assert context2.aggregate_context is None
     result_columns = collections.OrderedDict(
         [(col_name, Column(type=col.type, mode=col.mode, values=[]))
-         for col_name, col in context1.columns.iteritems()] +
+         for col_name, col in context1.columns.items()] +
         [(col_name, Column(type=col.type, mode=col.mode, values=[]))
-         for col_name, col in context2.columns.iteritems()])
+         for col_name, col in context2.columns.items()])
 
     for index1 in xrange(context1.num_rows):
         for index2 in xrange(context2.num_rows):
-            for col_name, column in context1.columns.iteritems():
+            for col_name, column in context1.columns.items():
                 result_columns[col_name].values.append(column.values[index1])
-            for col_name, column in context2.columns.iteritems():
+            for col_name, column in context2.columns.items():
                 result_columns[col_name].values.append(column.values[index2])
     return Context(context1.num_rows * context2.num_rows, result_columns, None)
 
@@ -304,5 +304,5 @@ def truncate_context(context, limit):
         return
     context.num_rows = limit
 
-    for column in context.columns.itervalues():
+    for column in context.columns.values():
         column.values[limit:] = []

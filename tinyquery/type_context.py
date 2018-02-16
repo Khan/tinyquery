@@ -43,7 +43,7 @@ class TypeContext(collections.namedtuple(
             collections.OrderedDict(
                 ((table_name, column_name), col_type)
                 for column_name, col_type
-                in columns_without_table.iteritems()),
+                in columns_without_table.items()),
             implicit_column_context, aggregate_context)
 
     @staticmethod
@@ -56,7 +56,7 @@ class TypeContext(collections.namedtuple(
     def from_full_columns(cls, full_columns, implicit_column_context=None,
                           aggregate_context=None):
         """Given just the columns field, fill in alias information."""
-        for (table_name, col_name), col_type in full_columns.iteritems():
+        for (table_name, col_name), col_type in full_columns.items():
             if table_name is not None:
                 cls.assert_type(table_name, tq_types.STRING_TYPE)
             cls.assert_type(col_name, tq_types.STRING_TYPE)
@@ -90,7 +90,7 @@ class TypeContext(collections.namedtuple(
         for context in contexts:
             assert context.aggregate_context is None
 
-            for (_, column_name), col_type in context.columns.iteritems():
+            for (_, column_name), col_type in context.columns.items():
                 full_column = (None, column_name)
                 if full_column in result_columns:
                     if result_columns[full_column] == col_type:
@@ -155,7 +155,7 @@ class TypeContext(collections.namedtuple(
             collections.OrderedDict(
                 ((subquery_alias, col_name), col_type)
                 for (_, col_name), col_type
-                in self.implicit_column_context.columns.iteritems()
+                in self.implicit_column_context.columns.items()
             )
         )
         return TypeContext(self.columns, self.aliases, self.ambig_aliases,
@@ -165,7 +165,7 @@ class TypeContext(collections.namedtuple(
         assert self.aggregate_context is None
         new_columns = collections.OrderedDict(
             ((alias, col_name), col_type)
-            for (_, col_name), col_type in self.columns.iteritems()
+            for (_, col_name), col_type in self.columns.items()
         )
         if self.implicit_column_context:
             new_implicit_column_context = (
