@@ -212,7 +212,7 @@ class ComparisonOperator(ScalarFunction):
             if other_column.type == tq_types.STRING:
                 # Convert that string to datetime if we can.
                 try:
-                    converted = [arrow.get(x).to('UTC').native
+                    converted = [arrow.get(x).to('UTC').naive
                                  for x in other_column.values]
                 except Exception:
                     raise TypeError('Invalid comparison on timestamp, '
