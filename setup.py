@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='Tinyquery',
-    version='1.2',
+    version='1.2.1',
     description='In-memory test stub for bigquery',
     author='Khan Academy',
     author_email='opensource+pypi@khanacademy.org',
