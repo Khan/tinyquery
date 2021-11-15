@@ -159,6 +159,7 @@ class TinyQuery(object):
             row = json.loads(line)
             flattened_row = flatten_row({}, row, fake_raw_schema)
             process_row(flattened_row)
+            result_table.num_rows += 1
 
         self.load_table_or_view(result_table)
 

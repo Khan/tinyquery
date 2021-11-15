@@ -68,6 +68,7 @@ class TinyQueryTest(unittest.TestCase):
         table = tinyquery.TinyQuery.make_empty_table(
             'test_table', self.record_schema)
         self.assertIn('r.r2.d2', table.columns)
+        self.assertEqual(table.num_rows, 0)
 
     def test_load_table_from_newline_delimited_json(self):
         record_json = json.dumps({
@@ -88,6 +89,7 @@ class TinyQueryTest(unittest.TestCase):
         table = tq.tables_by_name['test_table']
         self.assertIn('r.r2.d2', table.columns)
         self.assertIn(3, table.columns['r.r2.d2'].values)
+        self.assertEqual(table.num_rows, 1)
 
     def test_load_json_with_null_records(self):
         record_json = json.dumps({
@@ -137,3 +139,21 @@ class TinyQueryTest(unittest.TestCase):
                          ['a', 'b', 'c', 'd', 'e'])
         self.assertEqual(table.columns['r.inner_repeated'].values[0],
                          ['l', 'm', 'n'])
+
+    def test_load_table_multiple_rows_count(self):
+        record_json = json.dumps({
+            'i': 1,
+            'r': {
+                's': 'hello!',
+                'r2': {
+                    'd2': 3,
+                },
+            },
+        })
+        tq = tinyquery.TinyQuery()
+        tq.load_table_from_newline_delimited_json(
+            'test_table',
+            json.dumps(self.record_schema['fields']),
+            [record_json, record_json, record_json, record_json])
+        table = tq.tables_by_name['test_table']
+        self.assertEqual(table.num_rows, 4)
