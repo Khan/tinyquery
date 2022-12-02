@@ -559,6 +559,24 @@ class FirstFunction(AggregateFunction):
                               values=values)
 
 
+class LastFunction(AggregateFunction):
+    def check_types(self, rep_list_type):
+        return rep_list_type
+
+    def _evaluate(self, num_rows, column):
+        values = []
+        if len(column.values) == 0:
+            values = [None]
+
+        if column.mode == tq_modes.REPEATED:
+            values = [repeated_row[-1] if len(repeated_row) > 0 else None
+                      for repeated_row in column.values]
+        else:
+            values = [column.values[-1]]
+        return context.Column(type=column.type, mode=tq_modes.NULLABLE,
+                              values=values)
+
+
 class NoArgFunction(ScalarFunction):
     def __init__(self, func, return_type=tq_types.INT):
         self.func = func
@@ -1331,7 +1349,8 @@ _AGGREGATE_FUNCTIONS = {
     'group_concat_unquoted': GroupConcatUnquotedFunction(),
     'stddev_samp': StddevSampFunction(),
     'quantiles': QuantilesFunction(),
-    'first': FirstFunction()
+    'first': FirstFunction(),
+    'last': LastFunction(),
 }
 
 

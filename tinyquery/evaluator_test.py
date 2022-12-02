@@ -1357,6 +1357,22 @@ class EvaluatorTest(unittest.TestCase):
             ])
         )
 
+    def test_last(self):
+        # Test over the equivalent of a GROUP BY
+        self.assert_query_result(
+            'SELECT LAST(val1) FROM test_table',
+            self.make_context([
+                ('f0_', tq_types.INT, [2])
+            ])
+        )
+        # Test over something repeated
+        self.assert_query_result(
+            'SELECT LAST(QUANTILES(val1, 3)) FROM test_table',
+            self.make_context([
+                ('f0_', tq_types.INT, [8])
+            ])
+        )
+
         # TODO(colin): test behavior on empty list in both cases
 
     def test_left(self):
