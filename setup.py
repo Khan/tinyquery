@@ -11,7 +11,7 @@ setup(
     url='https://github.com/Khan/tinyquery',
     keywords=['bigquery'],
     packages=['tinyquery'],
-    install_requires=['arrow==0.12.1', 'ply==3.10', 'six==1.11.0'],
+    install_requires=['arrow>=0.12.1', 'ply>=3.10', 'six>=1.11.0'],
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2',
